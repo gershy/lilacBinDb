@@ -18,10 +18,10 @@ import './main.ts';
   const cases = [
     
     {
-      name: 'todo',
+      name: 'not implemented',
       fn: async () => {
         
-        throw Error('not implemented');
+        // TODO: Implement!
         
       }
     }

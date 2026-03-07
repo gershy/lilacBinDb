@@ -1,9 +1,13 @@
 {
   "name": "@gershy/lilac-bin-db",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Binary db lilac",
   "keywords": [
-    "lilac", "binary", "blob", "db", "database"
+    "lilac",
+    "binary",
+    "blob",
+    "db",
+    "database"
   ],
   "author": "Gershom Maes",
   "repository": {
@@ -16,10 +20,10 @@
   "homepage": "https://github.com/gershy/lilacBinDb#readme",
   "license": "ISC",
   "peerDependencies": {
-    "@gershy/clearing": "^0.0.17"
+    "@gershy/clearing": "^0.0.24"
   },
   "dependencies": {
-    "@gershy/lilac": "^0.0.1"
+    "@gershy/lilac": "^0.0.2"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
