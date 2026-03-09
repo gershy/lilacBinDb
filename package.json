@@ -1,6 +1,6 @@
 {
   "name": "@gershy/lilac-bin-db",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Binary db lilac",
   "keywords": [
     "lilac",
@@ -23,7 +23,7 @@
     "@gershy/clearing": "^0.0.29"
   },
   "dependencies": {
-    "@gershy/lilac": "^0.0.7"
+    "@gershy/lilac": "^0.0.8"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
