@@ -1,4 +1,4 @@
-import { inCls, getCls, getClsName } from '@gershy/clearing';
+import { skip, inCls, getCls, getClsName } from '@gershy/clearing';
 
 export const cmpAny = Symbol('@gershy/test/cmp/any');
 
@@ -95,21 +95,18 @@ export const equal = (v0: any, v1: any, path: (string | number)[] = []): { equal
     
   }
   
-  if (cls0 === Buffer) {
-    
-    if (v0.length !== v1.length) return { equal: false, path, reason: 'buffer size', len0: v0.length, len1: v1.length };
-    for (let i = 0; i < v0.length; i++) {
-      const eq = equal(v0[i], v1[i], [ ...path, i ]);
-      if (!eq.equal) return eq;
-    }
-    return { equal: true };
-    
-  }
+  if (cls0 === ArrayBuffer) return equal([ ...new Uint8Array(v0) ], [ ...new Uint8Array(v1) ], [ ...path, '<number[]>' ])
+  
+  if (ArrayBuffer.isView(v0)) return equal(
+    v0.buffer.slice(v0.byteOffset, v0.byteOffset + v0.byteLength),
+    v1.buffer.slice(v1.byteOffset, v1.byteOffset + v1.byteLength),
+    [ ...path, '<arrayBuffer>' ]
+  );
   
   if (inCls(v0, Error)) {
     // Include message, but not stack (because it's a nightmare to define expected stacktrace
     // values when defining expected results)
-    return equal({ $msg: v0.message, ...v0 }, { $msg: v1.message, ...v1 }, [ ...path, '<convertToObj>' ]);
+    return equal({ $msg: v0.message, ...v0 }, { $msg: v1.message, ...v1 }, [ ...path, '<obj>' ]);
   }
   
   return { equal: false, path, reason: 'unknown comparison', cls: getClsName(v0) };
@@ -120,5 +117,27 @@ export const assertEqual = (v0: any, v1: any) => {
   const { equal: eq, ...props } = equal(v0, v1);
   
   if (!eq) throw Error('assert equal')[mod]({ ...props });
+  
+};
+export const testRunner = async (rawCases: { name: string, fn: () => Promise<void> }[]) => {
+  
+  const regStr = skip
+    ?? process.argv.find(v => v.at(0) === '/' && v.at(-1) === '/')
+    ?? '/(?:)/';
+  const reg = new RegExp(regStr.slice('/'.length, -'/'.length));
+  
+  const cases = rawCases.filter(c => reg.test(c.name));
+  const num = cases.length;
+  const tot = rawCases.length;
+  if (num === 0) { console.log('Nothing to test'); return; }
+  
+  console.log(`Launch ${num} test(${num === 1 ? '' : 's'})`);
+  
+  for (const { name, fn } of cases)
+    try              { await fn(); }
+    catch (err: any) { console.log(`FAILED: "${name}"`, err[limn]()); process.exit(1); }
+  
+  console.log(`Accept ${num} test(${num === 1 ? '' : 's'})`);
+  if (num !== tot) console.log(`(Out of ${tot} total tests)`);
   
 };
