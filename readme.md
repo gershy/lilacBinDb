@@ -1,3 +1,3 @@
-# TODO
+# Lilac Binary Database
 
-Looks like someone needs to write this readme...
+A Lilac Flower which stores binary data.
