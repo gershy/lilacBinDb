@@ -23,7 +23,8 @@
     "@gershy/clearing": "^0.0.36"
   },
   "dependencies": {
-    "@gershy/lilac": "^0.0.15"
+    "@gershy/lilac": "^0.0.18",
+    "@gershy/logger": "^0.0.8"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
