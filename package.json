@@ -1,6 +1,7 @@
 {
   "name": "@gershy/lilac-bin-db",
-  "version": "0.0.13",
+  "version": "0.0.14",
+  "author": "Gershom Maes",
   "description": "Binary db lilac",
   "keywords": [
     "lilac",
@@ -9,7 +10,6 @@
     "db",
     "database"
   ],
-  "author": "Gershom Maes",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gershy/lilacBinDb.git"
@@ -18,39 +18,31 @@
     "url": "https://github.com/gershy/lilacBinDb/issues"
   },
   "homepage": "https://github.com/gershy/lilacBinDb#readme",
-  "license": "ISC",
-  "peerDependencies": {
-    "@gershy/clearing": "^0.0.36"
-  },
-  "dependencies": {
-    "@gershy/lilac": "^0.0.18",
-    "@gershy/logger": "^0.0.8"
-  },
-  "devDependencies": {
-    "@types/node": "^24.10.1",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
-  },
   "type": "module",
   "files": [
     "cmp"
   ],
-  "sideEffects": false,
-  "types": "./cmp/mjs/main.d.ts",
+  "license": "ISC",
+  "peerDependencies": {
+    "@gershy/clearing": "^0.0.42"
+  },
+  "dependencies": {
+    "@gershy/lilac": "^0.0.32",
+    "@gershy/lilac-lambda": "^0.0.8",
+    "@gershy/lilac-lambda-http": "^0.0.5",
+    "@gershy/logger": "^0.0.10"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1"
+  },
   "exports": {
     ".": {
-      "import": "./cmp/mjs/main.js",
+      "import": "./cmp/esm/main.js",
       "require": "./cmp/cjs/main.js"
     }
   },
   "scripts": {
     "test": "npm run ts.check && npx tsx ./src/main.test.ts",
-    "ts.check": "npx tsc --noEmit",
-    "build.cjs": "tsc -p build/tsconfig.cjs.json",
-    "build.mjs": "tsc -p build/tsconfig.mjs.json",
-    "build": "node ./build/act.js removeCmp && npm run build.cjs && npm run build.mjs && node ./build/act.js finalizeExportVariants",
-    "git.pub": "npm run test && git add --all && git commit -m \"automated\" && git push",
-    "npm.login": "npm login",
-    "npm.pub": "npm run test && npm run build && npm publish --access public"
+    "ts.check": "npx tsc --noEmit"
   }
 }

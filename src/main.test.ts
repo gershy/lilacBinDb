@@ -9,6 +9,7 @@ import { assertEqual, testRunner } from '../build/utils.test.ts';
   type Tests = {
     1: Enforce<{ x: 'y' }, { x: 'y' }>,
   };
+  if (0) ((v?: Tests) => void 0)();
   
 })();
 
@@ -19,6 +20,7 @@ testRunner([
     fn: async () => {
       
       // TODO: Implement!
+      assertEqual(null, null);
       
     }
   }
