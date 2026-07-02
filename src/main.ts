@@ -57,7 +57,7 @@ export class BinDb extends Flower {
     
   }
   
-  async getPetals(ctx: Context & { soil: Soil.Base }) {
+  async computePetals(ctx: Context & { soil: Soil.Base }) {
     
     const entities: PetalTerraform.Base[] = [];
     const addEntity = (petal: PetalTerraform.Base) => (entities.push(petal), petal);
