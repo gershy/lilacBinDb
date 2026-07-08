@@ -1,6 +1,6 @@
 {
   "name": "@gershy/lilac-bin-db",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "author": "Gershom Maes",
   "description": "Binary db lilac",
   "keywords": [
@@ -29,7 +29,7 @@
   "dependencies": {
     "@gershy/lilac": "^0.0.43",
     "@gershy/lilac-lambda": "^0.0.18",
-    "@gershy/lilac-lambda-http": "^0.0.13",
+    "@gershy/lilac-lambda-http": "^0.0.14",
     "@gershy/logger": "^0.0.14"
   },
   "devDependencies": {
