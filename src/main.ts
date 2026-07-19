@@ -2,7 +2,7 @@ import '@gershy/clearing';
 import phrasing                                       from '@gershy/util-phrasing';
 import * as tf                                        from './util/terraform.ts';
 import * as aws                                       from './util/aws.ts';
-import { type Context, Flower, PetalTerraform, Soil } from '@gershy/lilac';
+import { type Context, Flower, PetalTerraform } from '@gershy/lilac';
 import type { AnyLambda, LambdaBase }                            from '@gershy/lilac-lambda';
 // admin, write, query
 
@@ -12,26 +12,26 @@ class BinDbAdmin { constructor(args: any) {} }
 
 export class BinDb extends Flower {
   
+  protected context: Context;
   protected name: string;
   protected bucket: null | PetalTerraform.Base;
   protected accessors: { mode: 'query' | 'write' | 'admin', baseKey: null | string, lambda: LambdaBase<any, any, any, any, any, any> }[];
-  constructor(args: { name: string }) {
+  constructor(args: { context?: Context, name: string }) {
     super();
+    
+    if (!args.context) throw Error('context missing');
+    this.context = args.context;
     this.name = args.name;
     this.bucket = null;
     this.accessors = [];
   }
   
   public * getDependencies() { yield* super.getDependencies(); }
-  public getName(ctx) { return `${ctx.pfx}-${phrasing('camel->kebab', this.name)}` }
-  public getBucket(ctx: Context) {
+  public getName() { return `${this.context.pfx}-${phrasing('camel->kebab', this.name)}` }
+  public getBucket() {
     if (!this.bucket)
       this.bucket = new PetalTerraform.Resource('awsS3Bucket', this.name, {
-        bucket: this.getName(ctx),
-        tags: {
-          system: ctx.name,
-          maturity: ctx.maturity
-        },
+        bucket: this.getName(),
         forceDestroy: true // Make it easy to `terraform destroy`
       });
     
@@ -39,7 +39,7 @@ export class BinDb extends Flower {
   }
   
   public getAccessorConfig(ctx: Context, baseKey: null | string) {
-    return { bucket: this.getName(ctx), baseKey };
+    return { bucket: this.getName(), baseKey };
   }
   
   addAccessor(ctx: Context, mode: 'query', baseKey: null | string, lambda: AnyLambda): BinDbQuery;
@@ -57,12 +57,12 @@ export class BinDb extends Flower {
     
   }
   
-  async computePetals(ctx: Context & { soil: Soil.Base }) {
+  async computePetals() {
     
     const entities: PetalTerraform.Base[] = [];
     const addEntity = (petal: PetalTerraform.Base) => (entities.push(petal), petal);
     
-    const bucket = addEntity(this.getBucket(ctx));
+    const bucket = addEntity(this.getBucket());
     
     const ownership = addEntity(new PetalTerraform.Resource('awsS3BucketOwnershipControls', this.name, {
       bucket: bucket.ref('bucket'),
@@ -79,14 +79,10 @@ export class BinDb extends Flower {
     
     for (const { mode, baseKey, lambda } of this.accessors) {
       
-      const rolePetal = lambda.getRolePetal(ctx);
-      
-      // const rolePetals = await superToArr(lambda.getRole().getPetals({ ...ctx, soil: null as any }));
-      // const rolePetal = rolePetals.find(ent => ent.getType() === 'awsIamRole')!;
-      
+      const rolePetal = await lambda.getPetals().then(p => p.find(p => p.getType() === 'awsIamRole')!);
       const lambdaPolicyName = `lambdaStorage${phrasing('camel->kamel', lambda.getName())}${phrasing('camel->kamel', this.name)}`;
       const lambdaPolicy = addEntity(new PetalTerraform.Resource('awsIamPolicy', lambdaPolicyName, {
-        name: `${ctx.pfx}-${lambdaPolicyName}`,
+        name: `${this.context.pfx}-${lambdaPolicyName}`,
         policy: tf.json(aws.capitalKeys({ version: '2012-10-17', statement: [{
           effect: phrasing('camel->kamel', 'allow'),
           action: [
