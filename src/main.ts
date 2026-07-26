@@ -2,7 +2,7 @@ import '@gershy/clearing';
 import phrasing                                       from '@gershy/util-phrasing';
 import * as tf                                        from './util/terraform.ts';
 import * as aws                                       from './util/aws.ts';
-import { type Context, Flower, PetalTerraform } from '@gershy/lilac';
+import { Garden, Flower, PetalTerraform } from '@gershy/lilac';
 import type { AnyLambda, LambdaBase }                            from '@gershy/lilac-lambda';
 // admin, write, query
 
@@ -12,22 +12,23 @@ class BinDbAdmin { constructor(args: any) {} }
 
 export class BinDb extends Flower {
   
-  protected context: Context;
+  protected region: string;
   protected name: string;
   protected bucket: null | PetalTerraform.Base;
   protected accessors: { mode: 'query' | 'write' | 'admin', baseKey: null | string, lambda: LambdaBase<any, any, any, any, any, any> }[];
-  constructor(args: { context?: Context, name: string }) {
-    super();
+  constructor(args: { garden?: Garden<any, any>, region: string, name: string }) {
+    super(args);
     
-    if (!args.context) throw Error('context missing');
-    this.context = args.context;
+    this.region = args.region ?? this.garden.defaults.region ?? null;
+    if (!this.region) throw Error('region missing');
+    
     this.name = args.name;
     this.bucket = null;
     this.accessors = [];
   }
   
   public * getDependencies() { yield* super.getDependencies(); }
-  public getName() { return `${this.context.pfx}-${phrasing('camel->kebab', this.name)}` }
+  public getName() { return `${this.garden.pfx}-${phrasing('camel->kebab', this.name)}` }
   public getBucket() {
     if (!this.bucket)
       this.bucket = new PetalTerraform.Resource('awsS3Bucket', this.name, {
@@ -38,20 +39,20 @@ export class BinDb extends Flower {
     return this.bucket;
   }
   
-  public getAccessorConfig(ctx: Context, baseKey: null | string) {
+  public getAccessorConfig(baseKey: null | string) {
     return { bucket: this.getName(), baseKey };
   }
   
-  addAccessor(ctx: Context, mode: 'query', baseKey: null | string, lambda: AnyLambda): BinDbQuery;
-  addAccessor(ctx: Context, mode: 'write', baseKey: null | string, lambda: AnyLambda): BinDbWrite;
-  addAccessor(ctx: Context, mode: 'admin', baseKey: null | string, lambda: AnyLambda): BinDbAdmin;
-  addAccessor(ctx: Context, mode: 'query' | 'write' | 'admin', baseKey: null | string, lambda: LambdaBase<any, any, any, any, any, any>): any {
+  addAccessor(mode: 'query', baseKey: null | string, lambda: AnyLambda): BinDbQuery;
+  addAccessor(mode: 'write', baseKey: null | string, lambda: AnyLambda): BinDbWrite;
+  addAccessor(mode: 'admin', baseKey: null | string, lambda: AnyLambda): BinDbAdmin;
+  addAccessor(mode: 'query' | 'write' | 'admin', baseKey: null | string, lambda: LambdaBase<any, any, any, any, any, any>): any {
     
     this.accessors.push({ mode, baseKey, lambda });
     
-    if (mode === 'admin') return new BinDbAdmin(this.getAccessorConfig(ctx, baseKey));
-    if (mode === 'query') return new BinDbQuery(this.getAccessorConfig(ctx, baseKey));
-    if (mode === 'write') return new BinDbWrite(this.getAccessorConfig(ctx, baseKey));
+    if (mode === 'admin') return new BinDbAdmin(this.getAccessorConfig(baseKey));
+    if (mode === 'query') return new BinDbQuery(this.getAccessorConfig(baseKey));
+    if (mode === 'write') return new BinDbWrite(this.getAccessorConfig(baseKey));
     
     throw Error('bad mode')[cl.mod]({ mode });
     
@@ -82,7 +83,7 @@ export class BinDb extends Flower {
       const rolePetal = await lambda.getPetals().then(p => p.find(p => p.getType() === 'awsIamRole')!);
       const lambdaPolicyName = `lambdaStorage${phrasing('camel->kamel', lambda.getName())}${phrasing('camel->kamel', this.name)}`;
       const lambdaPolicy = addEntity(new PetalTerraform.Resource('awsIamPolicy', lambdaPolicyName, {
-        name: `${this.context.pfx}-${lambdaPolicyName}`,
+        name: `${this.garden.pfx}-${lambdaPolicyName}`,
         policy: tf.json(aws.capitalKeys({ version: '2012-10-17', statement: [{
           effect: phrasing('camel->kamel', 'allow'),
           action: [
