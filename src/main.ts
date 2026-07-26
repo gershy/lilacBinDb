@@ -14,7 +14,6 @@ export class BinDb extends Flower {
   
   protected region: string;
   protected name: string;
-  protected bucket: null | PetalTerraform.Base;
   protected accessors: { mode: 'query' | 'write' | 'admin', baseKey: null | string, lambda: LambdaBase<any, any, any, any, any, any> }[];
   constructor(args: { garden?: Garden<any, any>, region: string, name: string }) {
     super(args);
@@ -23,21 +22,11 @@ export class BinDb extends Flower {
     if (!this.region) throw Error('region missing');
     
     this.name = args.name;
-    this.bucket = null;
     this.accessors = [];
   }
   
   public * getDependencies() { yield* super.getDependencies(); }
   public getName() { return `${this.garden.pfx}-${phrasing('camel->kebab', this.name)}` }
-  public getBucket() {
-    if (!this.bucket)
-      this.bucket = new PetalTerraform.Resource('awsS3Bucket', this.name, {
-        bucket: this.getName(),
-        forceDestroy: true // Make it easy to `terraform destroy`
-      });
-    
-    return this.bucket;
-  }
   
   public getAccessorConfig(baseKey: null | string) {
     return { bucket: this.getName(), baseKey };
@@ -60,19 +49,26 @@ export class BinDb extends Flower {
   
   async computePetals() {
     
-    const entities: PetalTerraform.Base[] = [];
-    const addEntity = (petal: PetalTerraform.Base) => (entities.push(petal), petal);
+    const petals: PetalTerraform.Base[] = [];
+    const addPetal = (petal: PetalTerraform.Base) => (petals.push(petal), petal);
+    const regionProvider = tf.provider(this.garden.defaults.region, this.region);
     
-    const bucket = addEntity(this.getBucket());
+    const bucket = addPetal(new PetalTerraform.Resource('awsS3Bucket', this.name, {
+      ...regionProvider,
+      bucket: this.getName(),
+      forceDestroy: true // Make it easy to `terraform destroy`
+    }));
     
-    const ownership = addEntity(new PetalTerraform.Resource('awsS3BucketOwnershipControls', this.name, {
+    const ownership = addPetal(new PetalTerraform.Resource('awsS3BucketOwnershipControls', this.name, {
+      ...regionProvider,
       bucket: bucket.ref('bucket'),
       $rule: {
         objectOwnership: phrasing('camel->kamel', 'objectWriter')
       }
     }));
     
-    addEntity(new PetalTerraform.Resource('awsS3BucketAcl', this.name, {
+    addPetal(new PetalTerraform.Resource('awsS3BucketAcl', this.name, {
+      ...regionProvider,
       bucket: bucket.ref('bucket'),
       acl: 'private',
       dependsOn: [ ownership.ref() ]
@@ -82,7 +78,7 @@ export class BinDb extends Flower {
       
       const rolePetal = await lambda.getPetals().then(p => p.find(p => p.getType() === 'awsIamRole')!);
       const lambdaPolicyName = `lambdaStorage${phrasing('camel->kamel', lambda.getName())}${phrasing('camel->kamel', this.name)}`;
-      const lambdaPolicy = addEntity(new PetalTerraform.Resource('awsIamPolicy', lambdaPolicyName, {
+      const lambdaPolicy = addPetal(new PetalTerraform.Resource('awsIamPolicy', lambdaPolicyName, {
         name: `${this.garden.pfx}-${lambdaPolicyName}`,
         policy: tf.json(aws.capitalKeys({ version: '2012-10-17', statement: [{
           effect: phrasing('camel->kamel', 'allow'),
@@ -101,14 +97,14 @@ export class BinDb extends Flower {
         }]}))
       }));
       
-      addEntity(new PetalTerraform.Resource('awsIamRolePolicyAttachment', lambdaPolicyName, {
+      addPetal(new PetalTerraform.Resource('awsIamRolePolicyAttachment', lambdaPolicyName, {
         role:      rolePetal.ref('name'),
         policyArn: lambdaPolicy.ref('arn')
       }));
       
     }
     
-    return entities;
+    return petals;
     
   }
   
