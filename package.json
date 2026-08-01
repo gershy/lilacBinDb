@@ -1,6 +1,6 @@
 {
   "name": "@gershy/lilac-bin-db",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "author": "Gershom Maes",
   "description": "Binary db lilac",
   "keywords": [
@@ -12,25 +12,25 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gershy/lilacBinDb.git"
+    "url": "git+https://github.com/gershyNpm/lilacBinDb.git"
   },
   "bugs": {
-    "url": "https://github.com/gershy/lilacBinDb/issues"
+    "url": "https://github.com/gershyNpm/lilacBinDb/issues"
   },
-  "homepage": "https://github.com/gershy/lilacBinDb#readme",
+  "homepage": "https://github.com/gershyNpm/lilacBinDb#readme",
   "type": "module",
   "files": [
     "cmp"
   ],
   "license": "ISC",
   "peerDependencies": {
-    "@gershy/clearing": "^0.0.51"
+    "@gershy/clearing": "^0.0.52"
   },
   "dependencies": {
-    "@gershy/lilac": "^0.0.50",
-    "@gershy/lilac-lambda": "^0.0.26",
-    "@gershy/lilac-lambda-http": "^0.0.22",
-    "@gershy/logger": "^0.0.19"
+    "@gershy/lilac": "^0.0.51",
+    "@gershy/lilac-lambda": "^0.0.27",
+    "@gershy/lilac-lambda-http": "^0.0.23",
+    "@gershy/logger": "^0.0.20"
   },
   "devDependencies": {
     "@types/node": "^24.10.1"
