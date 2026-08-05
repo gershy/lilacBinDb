@@ -87,7 +87,7 @@ export class BinDb extends Flower {
             's3:ListBucket', // Always include this??
             ...([ 'query', 'admin' ][cl.has](mode) ? [ 's3:GetObject', ] : []),
             ...([ 'write', 'admin' ][cl.has](mode) ? [ 's3:PutObject', 's3:DeleteObject' ] : []),
-            // ...([ 'keep' ][has](mode)         ? [] : [])
+            // ...([ 'admin' ][has](mode)         ? [] : [])
             
           ],
           resource: [

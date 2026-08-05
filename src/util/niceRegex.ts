@@ -1,3 +1,5 @@
+// TODO: Create and move this into @gershy/util-nice-regex
+
 export default ((...args: string[] /* flags, niceRegexStr | niceRegexStr */) => {
   
   // Allows writing self-documenting regular expressions
