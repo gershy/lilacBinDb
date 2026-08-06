@@ -26,7 +26,7 @@ export class BinDb extends Flower {
     this.accessors = [];
   }
   
-  public getFlowerId() { return `awsSimpleStorageService/${this.region}/${this.name}` as const; }
+  public getFlowerId() { return `awsSimpleStorageService/${this.region}/${this.garden.pfx}-${this.name}` as const; }
   
   public * getDependencies() { yield* super.getDependencies(); }
   public getName() { return `${this.garden.pfx}-${phrasing('camel->kebab', this.name)}` }
