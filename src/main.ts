@@ -2,7 +2,7 @@ import '@gershy/clearing';
 import phrasing                                       from '@gershy/util-phrasing';
 import * as tf                                        from './util/terraform.ts';
 import * as aws                                       from './util/aws.ts';
-import { Garden, Flower, PetalTerraform } from '@gershy/lilac';
+import { Garden, Flower, PetalTerraform, type AwsRegionTerm } from '@gershy/lilac';
 import type { AnyLambda, LambdaBase }                            from '@gershy/lilac-lambda';
 // admin, write, query
 
@@ -12,18 +12,21 @@ class BinDbAdmin { constructor(args: any) {} }
 
 export class BinDb extends Flower {
   
-  protected region: string;
+  protected region: AwsRegionTerm;
   protected name: string;
   protected accessors: { mode: 'query' | 'write' | 'admin', baseKey: null | string, lambda: LambdaBase<any, any, any, any, any, any> }[];
-  constructor(args: { garden?: Garden<any, any>, region: string, name: string }) {
+  constructor(args: { garden?: Garden<any, any>, region: AwsRegionTerm, name: string }) {
     super(args);
     
-    this.region = args.region ?? this.garden.defaults.region ?? null;
-    if (!this.region) throw Error('region missing');
+    const region = args.region ?? this.garden.defaults.region ?? null;
+    if (!region) throw Error('region missing');
     
+    this.region = region;
     this.name = args.name;
     this.accessors = [];
   }
+  
+  public getFlowerId() { return `awsSimpleStorageService/${this.region}/${this.name}` as const; }
   
   public * getDependencies() { yield* super.getDependencies(); }
   public getName() { return `${this.garden.pfx}-${phrasing('camel->kebab', this.name)}` }
